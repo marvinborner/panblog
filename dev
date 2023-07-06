@@ -1,0 +1,9 @@
+#!/bin/sh
+
+set -e
+
+cd pub/
+python -m http.server 8080 &
+
+cd ..
+find md/ -type f -name "*.md" | entr ./gen

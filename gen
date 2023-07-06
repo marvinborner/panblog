@@ -1,0 +1,49 @@
+#!/bin/env bash
+
+set -e
+
+KATEX="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/"
+
+mkdir -p pub/
+
+rm -f res/diag/*
+mkdir -p res/diag
+
+cp index.md pub/index.md
+printf "\n\n" >>pub/index.md
+
+export MERMAID_FILTER_FORMAT="svg"
+export MERMAID_FILTER_THEME="dark"
+export MERMAID_FILTER_BACKGROUND="transparent"
+export MERMAID_FILTER_LOC="res/diag"
+export MERMAID_FILTER_IMAGE_CLASS="mermaid"
+
+ARGS="-A append.html -F mermaid-filter --toc --css style.css -t html -s --katex="$KATEX""
+
+# public
+for file in $(ls -1 md/*.md | sort -r); do
+	EXTRA=""
+	plot="$(head -n10 "$file" | grep -m 1 plot | cut -c 7-)"
+	[[ "$plot" = "true" ]] && EXTRA="-A plot.html"
+
+	name="$(basename $file | cut -f 1 -d '.')"
+	pandoc $ARGS $EXTRA "$file" -o "pub/$name".html &
+	title="$(head -n10 "$file" | grep -m 1 ^title | cut -c 8-)"
+	date="$(head -n10 "$file" | grep -m 1 ^date | cut -c 6-)"
+	author="$(head -n10 "$file" | grep -m 1 ^author | cut -c 8-)"
+	count="$(pandoc --lua-filter wordcount.lua "$file")"
+	echo "- [$title]($name.html) $date · $count words · $author" >>pub/index.md
+	echo "generated $title"
+done
+
+for job in $(jobs -p); do
+	wait "$job" || echo "$job failed"
+done
+
+pandoc --css index.css --css style.css -t html pub/index.md -s --katex="$KATEX" -o pub/index.html
+
+cp *.rss pub/
+cp *.css pub/
+cp -r res/ pub/
+
+rm pub/index.md

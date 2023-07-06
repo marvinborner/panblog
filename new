@@ -1,0 +1,11 @@
+#!/bin/sh
+
+export DATE=$(date '+%Y-%m-%d')
+
+name=$(date '+%Y-%m-%d-%H')
+cp -i template.md md/"$name".md
+
+envsubst <md/"$name".md >md/tmp
+mv md/tmp md/"$name".md
+
+echo md/"$name".md

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+	<channel>
+		<atom:link href="https://marvinborner.github.io/panblog/feed.rss" rel="self" type="application/rss+xml" />
+
+		<title>Blog</title>
+		<description>example articles and more</description>
+		<link>https://marvinborner.github.io/panblog/</link>
+
+		<item>
+			<title>Capabilities of Panblog</title>
+			<description>This article explains the features of Panblog! Very cool!</description>
+			<link>https://marvinborner.github.io/panblog/2023-07-06-23.html</link>
+			<guid isPermaLink="false">2023-07-06-23</guid>
+			<pubDate>Thu, 06 Jul 2023 23:32:16 +0000</pubDate>
+		</item>
+	<rchannel>
+</rss>
