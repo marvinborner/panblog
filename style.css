@@ -9,6 +9,7 @@
 		--text-code: #f9f9f9;
 		--background-normal: #222222;
 		--background-code: #333333;
+		--background-lighter: #555555;
 	}
 
 	/* code highlighting */
@@ -41,6 +42,8 @@
     code span.va { } /* Variable */
     code span.vs { color: #cc9393; } /* VerbatimString */
     code span.wa { color: #7f9f7f; font-weight: bold; } /* Warning */
+
+    code a.pp { color: #ffcfaf; font-weight: bold; text-decoration: underline; } /* Preprocessor */
 }
 
 @media (prefers-color-scheme: light) {
@@ -49,10 +52,11 @@
 		--text-code: #424242;
 		--background-normal: #fff;
 		--background-code: #eee;
+		--background-lighter: #ddd;
 	}
 
 	img[src$=".svg"].mermaid {
-		filter: invert(1);
+		filter: invert(1) contrast(2);
 	}
 
 	img.graph {
@@ -88,6 +92,8 @@
     code span.va { color: #000000; } /* Variable */
     code span.vs { color: #4e9a06; } /* VerbatimString */
     code span.wa { color: #8f5902; font-weight: bold; } /* Warning */
+
+    code a.pp { color: #8f5902; text-decoration: underline; } /* Preprocessor */
 }
 
 html {
@@ -117,6 +123,20 @@ body {
     margin: auto;
 	text-align: center;
 }
+
+.smaller-font {
+	font-size: 17px;
+}
+
+.small-font {
+	font-size: 14px;
+}
+
+img[src$=".svg"].mermaid {
+	margin: 0 auto;
+	display: block;
+}
+
 
 @media (max-width: 600px) {
 	body {
@@ -282,10 +302,13 @@ hr {
 }
 
 table {
+	display: block;
 	margin: 1em auto;
 	border-collapse: collapse;
-	overflow-x: auto;
 	font-variant-numeric: lining-nums tabular-nums;
+	overflow: auto;
+	width: fit-content;
+	max-height: 40vh;
 }
 
 table caption {
@@ -301,10 +324,14 @@ tbody {
 th {
 	border-top: 1px solid #555555;
 	padding: 0.25em 0.5em 0.25em 0.5em;
+	background-color: var(--background-normal);
+	position: sticky;
+	top: 0;
 }
 
 td {
 	padding: 0.125em 0.5em 0.25em 0.5em;
+	font-family: monospace;
 }
 
 header {
@@ -346,11 +373,18 @@ figure img[src$=".svg"] {
 }
 
 code, pre, div.sourceCode {
-	white-space: pre-wrap;
 	background-color: var(--background-code);
 	color: var(--text-code);
 	border-radius: 8px;
 	margin: 0;
+}
+
+.code-showcase, .code-showcase > * {
+	background-color: transparent;
+	margin: 0 auto;
+	width: fit-content;
+	max-width: 100%;
+	white-space: pre;
 }
 
 span.smallcaps {
@@ -430,4 +464,13 @@ div.popover div {
 	border: 1px solid var(--text-code);
 	background-color: var(--background-code);
 	padding: 16px;
+}
+
+details, button {
+	background-color: var(--background-code);
+	padding: 8px;
+	border-radius: 8px;
+	cursor: pointer;
+    color: var(--text-code);
+    border: 0;
 }

@@ -31,6 +31,27 @@ ul li a:after {
 	white-space: pre;
 }
 
+div.tags {
+    display: flex;
+	align-items: center;
+	text-align: center;
+	flex-wrap: wrap;
+}
+
+a.tag {
+    text-decoration: none;     
+    background-color: var(--background-lighter);
+    color: var(--text-normal);
+    font-size: 0.8em;
+    padding: 5px 8px;
+    margin: 5px 5px 5px 0;
+    border-radius: 15px;
+}
+
+a.tag:visited {
+    color: var(--text-normal);
+}
+
 .index-note {
 	display: table-footer-group;
 }

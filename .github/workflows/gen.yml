@@ -23,14 +23,20 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16
+      - name: Install deno
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: vx.x.x
+      - name: Install lua
+        uses: leafo/gh-actions-lua@v10
       - name: Install pandoc
         run: |
           wget https://github.com/jgm/pandoc/releases/download/3.1.2/pandoc-3.1.2-1-amd64.deb
           sudo dpkg -i pandoc*
-      - name: Install packages
+      - name: Install node packages
         run: |
-          sudo npm i -g mermaid-filter
-      - name: Setup Pages
+          npm i -g mermaid-filter
+      - name: Setup pages
         id: pages
         uses: actions/configure-pages@v3
       - name: Generate files

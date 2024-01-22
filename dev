@@ -6,4 +6,4 @@ cd pub/
 python -m http.server 8080 &
 
 cd ..
-find md/ -type f -name "*.md" | entr ./gen
+find md/ md-priv/ -type f -name "*.md" | entr ./gen

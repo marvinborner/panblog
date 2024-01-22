@@ -2,8 +2,6 @@
 
 set -e
 
-KATEX="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/"
-
 mkdir -p pub/
 
 rm -f res/diag/*
@@ -18,32 +16,63 @@ export MERMAID_FILTER_BACKGROUND="transparent"
 export MERMAID_FILTER_LOC="res/diag"
 export MERMAID_FILTER_IMAGE_CLASS="mermaid"
 
-ARGS="-A append.html -F mermaid-filter --toc --css style.css -t html -s --katex="$KATEX""
+ARGS="-A append.html -A common.html -F mermaid-filter --toc --css style.css -t html -s --citeproc --bibliography=bib.bib --biblatex --csl bib.csl -L ./server-katex/filter.lua"
+NHEAD=13
+
+function generate_index() {
+	pandoc --css index.css --css style.css -A common.html -t html "$1" -s -L ./server-katex/filter.lua -o "$2" &
+}
 
 # public
+declare -A all_tags
+declare -A all_posts
 for file in $(ls -1 md/*.md | sort -r); do
 	EXTRA=""
-	plot="$(head -n10 "$file" | grep -m 1 plot | cut -c 7-)"
+	plot="$(head -n$NHEAD "$file" | grep -m 1 plot | cut -c 7-)"
 	[[ "$plot" = "true" ]] && EXTRA="-A plot.html"
 
 	name="$(basename $file | cut -f 1 -d '.')"
-	pandoc $ARGS $EXTRA "$file" -o "pub/$name".html &
-	title="$(head -n10 "$file" | grep -m 1 ^title | cut -c 8-)"
-	date="$(head -n10 "$file" | grep -m 1 ^date | cut -c 6-)"
-	author="$(head -n10 "$file" | grep -m 1 ^author | cut -c 8-)"
+	title="$(head -n$NHEAD "$file" | grep -m 1 ^title | cut -c 8-)"
+	tags="$(head -n$NHEAD "$file" | grep -m 1 ^tags | cut -c 7-)"
+	date="$(echo $name | rev | cut -c 4- | rev)"
+	pubdate="$(head -n$NHEAD "$file" | grep -m 1 ^date | cut -c 6-)"
+	author="$(head -n$NHEAD "$file" | grep -m 1 ^author | cut -c 8-)"
 	count="$(pandoc --lua-filter wordcount.lua "$file")"
-	echo "- [$title]($name.html) $date · $count words · $author" >>pub/index.md
+	pandoc $ARGS $EXTRA "$file" -o "pub/$name".html &
+
+	post="- [$title]($name.html)"
+	post="$post<div>$date - $pubdate · $count words · $author</div><div class=tags>"
+
+	tags="$(echo "$tags" | tr "," "\n")"
+	while IFS= read -r tag; do
+		all_tags["$tag"]="$name"$'\n'"${all_tags["$tag"]}"
+		post="$post<a class=tag href='tag_$tag.html'>$tag</a>"
+	done <<<"$tags"
+
+	post="$post</div>"
+
+	all_posts["$name"]="$post"
+	echo "$post" >>pub/index.md
 	echo "generated $title"
 done
 
+for tag in "${!all_tags[@]}"; do
+	cp index.md "pub/tag_$tag.md"
+	for name in ${all_tags[$tag]}; do
+		echo "${all_posts[$name]}" >>"pub/tag_$tag.md"
+	done
+	generate_index "pub/tag_$tag.md" "pub/tag_$tag.html"
+done
+
+generate_index pub/index.md pub/index.html
+
+echo "waiting..."
 for job in $(jobs -p); do
 	wait "$job" || echo "$job failed"
 done
-
-pandoc --css index.css --css style.css -t html pub/index.md -s --katex="$KATEX" -o pub/index.html
 
 cp *.rss pub/
 cp *.css pub/
 cp -r res/ pub/
 
-rm pub/index.md
+echo "done!"

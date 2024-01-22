@@ -1,74 +1,102 @@
 <div class="buttons">
-	<button title="toggle theme"><svg><use href="res/feather.svg#moon"/></svg></button>	
-	<button title="remove distractions"><svg><use href="res/feather.svg#eye-off"/></svg></button>	
-	<button title="share on twitter or mastodon"><svg><use href="res/feather.svg#share-2"/></svg></button>	
-	<button title="open print dialog"><svg><use href="res/feather.svg#printer"/></svg></button>	
-	<button title="go to index"><svg><use href="res/feather.svg#home"/></svg></button>	
+  <button title="toggle theme">
+    <svg><use href="res/feather.svg#moon" /></svg>
+  </button>
+  <button title="remove distractions">
+    <svg><use href="res/feather.svg#eye-off" /></svg>
+  </button>
+  <button title="share on twitter or mastodon">
+    <svg><use href="res/feather.svg#share-2" /></svg>
+  </button>
+  <button title="open print dialog">
+    <svg><use href="res/feather.svg#printer" /></svg>
+  </button>
+  <button title="go to index">
+    <svg><use href="res/feather.svg#home" /></svg>
+  </button>
 </div>
 
 <div id="share" class="popover">
-    <div>
-        <ul>
-            <li><a href="https://twitter.com" id="twitter">Share on Twitter</a></li>
-            <li><a href="https://joinmastodon.org" id="mastodon">Share on Mastodon</a></li>
-        </ul>
-    </div>
+  <div>
+    <ul>
+      <li><a href="https://twitter.com" id="twitter">Share on Twitter</a></li>
+      <li>
+        <a href="https://joinmastodon.org" id="mastodon">Share on Mastodon</a>
+      </li>
+    </ul>
+  </div>
 </div>
 
 <script>
-	// haha i love this
-	// thanks, me too
-	const toggleScheme = () => {
-		for (const rule of document.styleSheets[1].rules) {
-			if (!rule.media || !rule.media.mediaText.includes("prefers-color-scheme"))
-				continue
-			if (rule.media.mediaText.includes("dark")) {
-				rule.media.deleteMedium("(prefers-color-scheme: dark)");
-				rule.media.appendMedium("(prefers-color-scheme: light)");
-			} else {
-				rule.media.deleteMedium("(prefers-color-scheme: light)");
-				rule.media.appendMedium("(prefers-color-scheme: dark)");
-			}
-		}
-	}
+  /// scripts for the sidebar
 
-	let text = "V2tWa1YwNUhVa1pSYmxKYVYwVnZlVmxXWXpGaFYwbDZVMjVXWVZkRmJERlhhMlJXVUZFOVBRPT0=";
+  // haha i love this
+  // thanks, me too
+  const toggleScheme = () => {
+    for (const rule of document.styleSheets[1].rules) {
+      if (!rule.media || !rule.media.mediaText.includes("prefers-color-scheme"))
+        continue;
+      if (rule.media.mediaText.includes("dark")) {
+        rule.media.deleteMedium("(prefers-color-scheme: dark)");
+        rule.media.appendMedium("(prefers-color-scheme: light)");
+      } else {
+        rule.media.deleteMedium("(prefers-color-scheme: light)");
+        rule.media.appendMedium("(prefers-color-scheme: dark)");
+      }
+    }
 
-	(() => {
-        const sharePopover = document.querySelector(".popover#share");
+    if (typeof redrawPlots === "function") redrawPlots();
+  };
 
-		const funcs = [
-			() => toggleScheme(),
-			() => document.querySelectorAll("nav, .buttons").forEach(e => e.remove()),
-            () => sharePopover.style.display = "block", 
-			() => window.print(),
-			() => window.location.href = "/",
-		]
+  const toggleDetails = () => {
+    document.querySelectorAll("details").forEach((e) => (e.open = !e.open));
+  };
 
-        sharePopover.addEventListener("click", e => {
-            sharePopover.style.display = "none";
-        });
+  let text =
+    "V2tWa1YwNUhVa1pSYmxKYVYwVnZlVmxXWXpGaFYwbDZVMjVXWVZkRmJERlhhMlJXVUZFOVBRPT0=";
 
-		document.querySelector("#twitter").href = `https://twitter.com/intent/tweet?text=${document.title}%0A${window.location.href}`;
-        document.querySelector("#mastodon").onclick = e => {
-            window.location.href = `https://${prompt("Enter your mastodon instance:", "mastodon.social")}/share?text=${document.title}%0A${window.location.href}`;
-            e.preventDefault();
+  (() => {
+    const sharePopover = document.querySelector(".popover#share");
+
+    const funcs = [
+      () => toggleScheme(),
+      () =>
+        document.querySelectorAll("nav, .buttons").forEach((e) => e.remove()),
+      () => (sharePopover.style.display = "block"),
+      () => {
+        document.querySelectorAll("details").forEach((e) => (e.open = true));
+        window.print();
+        document.querySelectorAll("details").forEach((e) => (e.open = false));
+      },
+      () => (window.location.href = "/"),
+    ];
+
+    sharePopover.addEventListener("click", (e) => {
+      sharePopover.style.display = "none";
+    });
+
+    document.querySelector("#twitter").href =
+      `https://twitter.com/intent/tweet?text=${document.title}%0A${window.location.href}`;
+    document.querySelector("#mastodon").onclick = (e) => {
+      window.location.href = `https://${prompt(
+        "Enter your mastodon instance:",
+        "mastodon.social",
+      )}/share?text=${document.title}%0A${window.location.href}`;
+      e.preventDefault();
+    };
+
+    const buttons = document.querySelectorAll(".buttons button");
+    for (let i = 0; i < buttons.length; i++)
+      buttons[i].addEventListener("click", funcs[i]);
+
+    setTimeout(() => {
+      const links = document.querySelectorAll("a");
+      for (let i = 0; i < links.length; i++) {
+        if (links[i].getAttribute("href") == "mail") {
+          for (let j = 0; j < 4; j++) text = atob(text);
+          links[i].href = `mailto:${text}`;
         }
-
-		const buttons = document.querySelectorAll(".buttons button");
-		for (let i = 0; i < buttons.length; i++)
-			buttons[i].addEventListener("click", funcs[i]);
-
-		setTimeout(() => {
-			const links = document.querySelectorAll("a");
-			for (let i = 0; i < links.length; i++) {
-				if (links[i].getAttribute("href") == "mail") {
-					for (let j = 0; j < 4; j++)
-						text = atob(text);
-					links[i].href = `mailto:${text}`;
-				}
-			}
-		}, 1000);
-	})();
+      }
+    }, 1000);
+  })();
 </script>
-

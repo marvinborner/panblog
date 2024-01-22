@@ -1,11 +1,13 @@
 #!/bin/sh
 
+echo "Are you sure? Make sure you finished all your TODOs first!"
+
 export DATE=$(date '+%Y-%m-%d')
 
 name=$(date '+%Y-%m-%d-%H')
-cp -i template.md md/"$name".md
+cp -i template.md md-priv/"$name".md
 
-envsubst <md/"$name".md >md/tmp
-mv md/tmp md/"$name".md
+envsubst <md-priv/"$name".md >md-priv/tmp
+mv md-priv/tmp md-priv/"$name".md
 
-echo md/"$name".md
+echo md-priv/"$name".md
