@@ -2,13 +2,15 @@
 
 set -e
 
-mkdir -p pub/
+mkdir -p pub/priv
 
 rm -f res/diag/*
 mkdir -p res/diag
 
 cp index.md pub/index.md
+cp index.md pub/priv/index.md
 printf "\n\n" >>pub/index.md
+printf "\n\n" >>pub/priv/index.md
 
 export MERMAID_FILTER_FORMAT="svg"
 export MERMAID_FILTER_THEME="dark"
@@ -16,7 +18,7 @@ export MERMAID_FILTER_BACKGROUND="transparent"
 export MERMAID_FILTER_LOC="res/diag"
 export MERMAID_FILTER_IMAGE_CLASS="mermaid"
 
-ARGS="-A append.html -A common.html -F mermaid-filter --toc --css style.css -t html -s --citeproc --bibliography=bib.bib --biblatex --csl bib.csl -L ./server-katex/filter.lua"
+ARGS="-A common.html -F mermaid-filter --toc --css style.css -t html -s --citeproc --bibliography=bib.bib --biblatex -L ./server-katex/filter.lua"
 NHEAD=13
 
 function generate_index() {
@@ -27,9 +29,9 @@ function generate_index() {
 declare -A all_tags
 declare -A all_posts
 for file in $(ls -1 md/*.md | sort -r); do
-	EXTRA=""
+	EXTRA="-A append.html"
 	plot="$(head -n$NHEAD "$file" | grep -m 1 plot | cut -c 7-)"
-	[[ "$plot" = "true" ]] && EXTRA="-A plot.html"
+	[[ "$plot" = "true" ]] && EXTRA="$EXTRA -A plot.html"
 
 	name="$(basename $file | cut -f 1 -d '.')"
 	title="$(head -n$NHEAD "$file" | grep -m 1 ^title | cut -c 8-)"
@@ -38,10 +40,16 @@ for file in $(ls -1 md/*.md | sort -r); do
 	pubdate="$(head -n$NHEAD "$file" | grep -m 1 ^date | cut -c 6-)"
 	author="$(head -n$NHEAD "$file" | grep -m 1 ^author | cut -c 8-)"
 	count="$(pandoc --lua-filter wordcount.lua "$file")"
+
+	if [[ "$tags" == *"essay"* ]]; then
+		EXTRA=""
+	fi
+
 	pandoc $ARGS $EXTRA "$file" -o "pub/$name".html &
 
 	post="- [$title]($name.html)"
-	post="$post<div>$date - $pubdate · $count words · $author</div><div class=tags>"
+	# post="$post<div>$date - $pubdate · $count words · $author</div><div class=tags>"
+	post="$post<div>$pubdate · $count words · $author</div><div class=tags>"
 
 	tags="$(echo "$tags" | tr "," "\n")"
 	while IFS= read -r tag; do
@@ -64,7 +72,34 @@ for tag in "${!all_tags[@]}"; do
 	generate_index "pub/tag_$tag.md" "pub/tag_$tag.html"
 done
 
+# private/unfinished
+# TODO: Merge with pub code
+priv_words=0
+priv_count=0
+for file in $(ls -1 md-priv/*.md | sort -r); do
+	EXTRA="-A append.html"
+	plot="$(head -n$NHEAD "$file" | grep -m 1 plot | cut -c 7-)"
+	[[ "$plot" = "true" ]] && EXTRA="$EXTRA -A plot.html"
+
+	name="$(basename $file | cut -f 1 -d '.')"
+	pandoc $ARGS $EXTRA "$file" -o "pub/priv/$name".html &
+	title="$(head -n$NHEAD "$file" | grep -m 1 ^title | cut -c 8-)"
+	date="$(echo $name | rev | cut -c 4- | rev)"
+	pubdate="$(head -n$NHEAD "$file" | grep -m 1 ^date | cut -c 6-)"
+	author="$(head -n$NHEAD "$file" | grep -m 1 ^author | cut -c 8-)"
+	count="$(pandoc --lua-filter wordcount.lua "$file")"
+	priv_words=$((priv_words + count))
+	priv_count=$((priv_count + 1))
+	# echo "- [$title]($name.html) $date - $pubdate · $count words · $author" >>pub/priv/index.md
+	echo "- [$title]($name.html) $pubdate · $count words · $author" >>pub/priv/index.md
+	echo "generated $title"
+done
+
+#echo "" >>pub/index.md
+#echo "<div class=index-note><p>Queue: Working on $priv_count to-be-published posts, totalling $priv_words words.</p></div>" >>pub/index.md
+
 generate_index pub/index.md pub/index.html
+generate_index pub/priv/index.md pub/priv/index.html
 
 echo "waiting..."
 for job in $(jobs -p); do
@@ -73,6 +108,9 @@ done
 
 cp *.rss pub/
 cp *.css pub/
+cp *.css pub/priv/
+# cp res/favicon.ico pub/
 cp -r res/ pub/
+cp -r res/ pub/priv/
 
 echo "done!"

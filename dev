@@ -6,4 +6,9 @@ cd pub/
 python -m http.server 8080 &
 
 cd ..
-find md/ md-priv/ -type f -name "*.md" | entr ./gen
+
+if [ -z "$1" ]; then
+	find res/ md/ md-priv/ -type f -name "*.md" -or -name "*.js" | entr ./gen
+else
+	find res/ md/ md-priv/ -type f -name "*.md" -or -name "*.js" | entr ./genonly "$1"
+fi
