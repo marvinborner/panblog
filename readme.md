@@ -14,3 +14,8 @@ blog](https://text.marvinborner.de).
 -   `./dev` to spin up a development server for all files
 -   `./dev md-priv/file.md` to spin up a development server for a single
     file
+-   visit `localhost:8080` for the public preview or `/priv/` for the
+    work-in-progress
+-   when you're done writing, move `md-priv/file.md` to `md`
+    -   you may also want to add `&& rm -r pub/priv` to the "Generate
+        files" section of the `gen.yml` workflow
